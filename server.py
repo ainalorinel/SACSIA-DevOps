@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import asyncio
 import base64
 import binascii
@@ -6,7 +8,6 @@ import logging
 import socket
 import time
 import threading
-import os
 import uuid
 from pymongo import MongoClient
 
@@ -14,7 +15,6 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from typing import Optional, List, Dict
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -45,13 +45,23 @@ mongo_client = MongoClient("mongodb://localhost:27017/")
 db = mongo_client["sacsia_db"]
 members_collection = db["members"]
 
-UPLOAD_DIR = "db/uploads/members"
+BASE_DIR = Path(__file__).resolve().parent
+MONGODB_URI = os.getenv(
+    "MONGODB_URI",
+    "mongodb://localhost:27017/"
+)
+mongo_client = MongoClient(MONGODB_URI)
+
+UPLOAD_DIR = str(BASE_DIR / "db" / "uploads" / "members")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Modèles YOLO
-YOLO_MODEL_PATH = r"runs\facial_recognition\train-6\weights\best.pt"
-YOLO_PARKING_MODEL_PATH = r"runs\detect\model_for_parking\weights\best.pt"
-
+YOLO_MODEL_PATH = str(
+    BASE_DIR / "runs" / "facial_recognition" / "train-6" / "weights" / "best.pt"
+)
+YOLO_PARKING_MODEL_PATH = str(
+    BASE_DIR / "runs" / "detect" / "model_for_parking" / "weights" / "best.pt"
+)
 yolo_model: Optional[YOLO] = None
 
  
