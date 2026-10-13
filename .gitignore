@@ -1,0 +1,58 @@
+﻿# Environnement Python
+.venv/
+venv/
+env/
+
+# Fichiers Python temporaires
+__pycache__/
+*.py[cod]
+
+# Journaux
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Bases de données locales et données personnelles
+/db/
+*.sqlite
+*.sqlite3
+*.db
+
+# Modèles préentraînés volumineux
+/modeles/*.pt
+/modeles/*.onnx
+/modeles/*.engine
+/modeles/*.bin
+
+# Dataset d'entraînement
+/sacsia-parking-1/
+
+# Résultats d'entraînement : ignorer par défaut
+/runs/*
+
+# Autoriser uniquement les deux modèles utilisés par le serveur
+!/runs/facial_recognition/
+/runs/facial_recognition/*
+!/runs/facial_recognition/train-6/
+/runs/facial_recognition/train-6/*
+!/runs/facial_recognition/train-6/weights/
+/runs/facial_recognition/train-6/weights/*
+!/runs/facial_recognition/train-6/weights/best.pt
+
+!/runs/detect/
+/runs/detect/*
+!/runs/detect/model_for_parking/
+/runs/detect/model_for_parking/*
+!/runs/detect/model_for_parking/weights/
+/runs/detect/model_for_parking/weights/*
+!/runs/detect/model_for_parking/weights/best.pt
+
+# Caches
+*.cache
+
+# Fichiers système
+.DS_Store
+Thumbs.db

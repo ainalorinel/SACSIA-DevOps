@@ -1,0 +1,29 @@
+﻿name: SACSIA - Continuous Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-syntax:
+    name: Verify Python syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get source code
+        uses: actions/checkout@v7
+
+      - name: Configure Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Check Python syntax
+        run: |
+          python -m compileall -q server.py setup_parking_spots.py test.py train.py
