@@ -27,3 +27,23 @@ jobs:
       - name: Check Python syntax
         run: |
           python -m compileall -q server.py setup_parking_spots.py test.py train.py
+
+  health-check:
+    name: Check deployed API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PythonAnywhere health endpoint
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+
+          url = "https://lorinel.pythonanywhere.com/health"
+
+          with urllib.request.urlopen(url, timeout=20) as response:
+              assert response.status == 200
+              data = json.loads(response.read().decode())
+
+          assert data.get("status") == "ok", data
+          print("PythonAnywhere health check passed:", data)
+          PY
