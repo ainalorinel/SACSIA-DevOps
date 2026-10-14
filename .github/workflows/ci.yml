@@ -47,3 +47,82 @@ jobs:
           assert data.get("status") == "ok", data
           print("PythonAnywhere health check passed:", data)
           PY
+
+
+  deploy-pythonanywhere:
+    name: Deploy health-check API
+    needs: health-check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install deployment dependency
+        run: python -m pip install requests
+
+      - name: Upload deployment file and reload site
+        env:
+          PA_API_TOKEN: ${{ secrets.PA_API_TOKEN }}
+          PA_USERNAME: ${{ secrets.PA_USERNAME }}
+          PA_DOMAIN: ${{ secrets.PA_DOMAIN }}
+        run: |
+          python - <<'PY'
+          import os
+          import requests
+
+          username = os.environ["PA_USERNAME"]
+          domain = os.environ["PA_DOMAIN"]
+          token = os.environ["PA_API_TOKEN"]
+
+          headers = {"Authorization": f"Token {token}"}
+          base = f"https://www.pythonanywhere.com/api/v0/user/{username}"
+
+          file_path = f"/home/{username}/SACSIA-DevOps/deploy_check.py"
+          upload_url = f"{base}/files/path{file_path}"
+
+          with open("deploy_check.py", "rb") as source:
+              response = requests.post(
+                  upload_url,
+                  headers=headers,
+                  files={"content": ("deploy_check.py", source)},
+                  timeout=30,
+              )
+
+          response.raise_for_status()
+          print("Deployment file uploaded.")
+
+          reload_url = (
+              f"https://www.pythonanywhere.com/api/v1/user/"
+              f"{username}/websites/{domain}/reload/"
+          )
+          response = requests.post(
+              reload_url, headers=headers, timeout=30
+          )
+          response.raise_for_status()
+          print("PythonAnywhere site reloaded.")
+          PY
+
+      - name: Verify deployed API
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          import urllib.request
+
+          url = "https://lorinel.pythonanywhere.com/health"
+
+          for attempt in range(5):
+              try:
+                  with urllib.request.urlopen(url, timeout=20) as response:
+                      data = json.loads(response.read().decode())
+                      assert response.status == 200
+                      assert data.get("status") == "ok"
+                  print("Deployment verified:", data)
+                  break
+              except Exception:
+                  if attempt == 4:
+                      raise
+                  time.sleep(5)
+          PY
